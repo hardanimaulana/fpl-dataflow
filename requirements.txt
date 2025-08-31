@@ -1,0 +1,6 @@
+# requirements.txt
+duckdb
+pandas
+requests
+python-dateutil
+streamlit

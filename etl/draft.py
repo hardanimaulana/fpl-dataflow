@@ -279,8 +279,19 @@ def check_initial_data_available(cutoff_date: str) -> bool:
     Check if the initial data exists before running daily updates
     """
     con = duckdb.connect("data.db")
+
+    # Check if table exists
+    tables = con.execute("SHOW TABLES").fetchall()
+    if ("draft_standings",) not in tables:
+        print("Table draft_standings does not exist yet.")
+        return False  # no data available
+
     df_existing = con.execute("SELECT * FROM draft_standings ORDER BY update DESC").df()
-    data_available = (df_existing["update"] <= cutoff_date).any()
+
+    # Your existing cutoff_date logic
+    data_available = False
+    if not df_existing.empty:
+        data_available = (df_existing["update"] <= cutoff_date).any()
     con.close()
     return data_available
 

@@ -24,18 +24,22 @@ jobs:
       - name: Run Draft ETL
         run: python etl/draft.py
 
-      - name: Commit & push DB
+      - name: Configure Git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # Pull remote changes first
-          git pull origin main --rebase
+      - name: Sync with remote
+        run: |
+          git fetch origin main
+          git pull --rebase origin main
 
-          git add -f data.db
+      - name: Commit updated DB
+        run: |
+          git add data.db
           if ! git diff --cached --quiet; then
             git commit -m "Update data.db ($(date -u))"
             git push origin main
           else
-            echo "No changes"
+            echo "No changes to commit"
           fi

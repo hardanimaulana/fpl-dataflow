@@ -16,18 +16,43 @@ def fetch_draft():
     url = "https://draft.premierleague.com/api/league/49439/details"
     r = requests.get(url, timeout=30)
     r.raise_for_status()
-    df = pd.DataFrame(r.json()["standings"])
+    league_data_json = r.json()
+    df_league_standings = pd.DataFrame(league_data_json["standings"])
+
+    # Extract league entries metadata
+    df_entries = pd.DataFrame(league_data_json["league_entries"])
+
+    # Keep only necessary columns and rename 'id' to 'league_entry'
+    df_entries = df_entries[
+        ["id", "entry_name", "player_first_name", "player_last_name"]
+    ]
+    df_entries = df_entries.rename(columns={"id": "league_entry"})
+
+    # Combine first + last name into one column
+    df_entries["player_name"] = (
+        df_entries["player_first_name"].fillna("")
+        + " "
+        + df_entries["player_last_name"].fillna("")
+    )
+    df_entries = df_entries.drop(columns=["player_first_name", "player_last_name"])
+
+    # Merge into standings
+    df_league_standings = df_league_standings.merge(
+        df_entries, on="league_entry", how="left"
+    )
 
     # add metadata
     update = datetime.now(pytz.UTC).replace(microsecond=0).isoformat()
-    df["update"] = update
+    df_league_standings["update"] = update
 
     # add progress + best gw
-    max_value = df["event_total"].max()
-    df["best_gw"] = np.where(df["event_total"] == max_value, "best", "")
-    df["progress"] = df.apply(get_progress, axis=1)
+    max_value = df_league_standings["event_total"].max()
+    df_league_standings["best_gw"] = np.where(
+        df_league_standings["event_total"] == max_value, "best", ""
+    )
+    df_league_standings["progress"] = df_league_standings.apply(get_progress, axis=1)
 
-    return df
+    return df_league_standings
 
 
 def store_draft(df: pd.DataFrame):
@@ -50,9 +75,9 @@ def get_progress(row: pd.Series) -> str:
     """
     if pd.isna(row["last_rank"]):
         return ""
-    elif row["rank_sort"] > row["last_rank"]:
-        return "green"
     elif row["rank_sort"] < row["last_rank"]:
+        return "green"
+    elif row["rank_sort"] > row["last_rank"]:
         return "red"
     else:
         return ""
@@ -62,6 +87,29 @@ def add_initial_data():
     """
     Data to add manually until the daily crawl works properly
     """
+
+    # Extract league entries metadata
+    url = "https://draft.premierleague.com/api/league/49439/details"
+    r = requests.get(url, timeout=30)
+    r.raise_for_status()
+    league_data_json = r.json()
+
+    df_entries = pd.DataFrame(league_data_json["league_entries"])
+
+    # Keep only necessary columns and rename 'id' to 'league_entry'
+    df_entries = df_entries[
+        ["id", "entry_name", "player_first_name", "player_last_name"]
+    ]
+    df_entries = df_entries.rename(columns={"id": "league_entry"})
+
+    # Combine first + last name into one column
+    df_entries["player_name"] = (
+        df_entries["player_first_name"].fillna("")
+        + " "
+        + df_entries["player_last_name"].fillna("")
+    )
+    df_entries = df_entries.drop(columns=["player_first_name", "player_last_name"])
+
     gw1_temp = {
         "standings": [
             {
@@ -248,6 +296,11 @@ def add_initial_data():
     }
 
     df1 = pd.DataFrame.from_dict(gw1_temp["standings"])
+
+    # Merge league entries into GW1 standings
+    df1 = df1.merge(df_entries, on="league_entry", how="left")
+
+    # add data in GW1 dataframe
     df1["update"] = (
         datetime(2025, 8, 22, tzinfo=pytz.UTC).replace(microsecond=0).isoformat()
     )
@@ -256,6 +309,11 @@ def add_initial_data():
     df1["best_gw"] = np.where(df1["event_total"] == max_value, "best", "")
 
     df2 = pd.DataFrame.from_dict(gw2_temp["standings"])
+
+    # Merge league entries into GW2 standings
+    df2 = df2.merge(df_entries, on="league_entry", how="left")
+
+    # add data in GW2 dataframe
     df2["update"] = (
         datetime(2025, 8, 30, tzinfo=pytz.UTC).replace(microsecond=0).isoformat()
     )

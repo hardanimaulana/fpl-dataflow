@@ -23,9 +23,9 @@ def fetch_draft():
     df["update"] = update
 
     # add progress + best gw
-    df["progress"] = df.apply(get_progress, axis=1)
     max_value = df["event_total"].max()
     df["best_gw"] = np.where(df["event_total"] == max_value, "best", "")
+    df["progress"] = df.apply(get_progress, axis=1)
 
     return df
 

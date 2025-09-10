@@ -32,7 +32,7 @@ jobs:
       - name: Sync with remote
         run: |
           git fetch origin main
-          git pull --rebase origin main
+          git reset --hard origin/main
 
       - name: Commit updated DB
         run: |

@@ -13,16 +13,29 @@ jobs:
   etl:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history to detect binary file changes
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Install deps
         run: pip install -r requirements.txt
 
+      - name: Remove old DB
+        run: |
+          rm -f data.db    # always start fresh so changes are guaranteed
+
       - name: Run Draft ETL
         run: python etl/draft.py
+
+      - name: Debug DB hash
+        run: |
+          sha256sum data.db || echo "No db file yet"
 
       - name: Configure Git
         run: |

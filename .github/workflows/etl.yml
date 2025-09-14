@@ -62,3 +62,10 @@ jobs:
           else
             echo "data.db not found"
           fi
+
+      - name: Force redeploy trigger
+        run: |
+          date -u > .streamlit_app_update
+          git add .streamlit_app_update
+          git commit -m "Trigger Streamlit redeploy [$(date -u +"%Y-%m-%d %H:%M:%S UTC")]" || echo "No changes"
+          git push origin main

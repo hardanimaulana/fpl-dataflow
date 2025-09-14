@@ -46,26 +46,15 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Commit updated DB (versioned + root)
+      - name: Commit updated DB
         run: |
           git fetch origin main
           git reset --hard origin/main
 
           if [ -f data.db ]; then
-            TS=$(date -u +'%Y%m%d_%H%M%S')
-            mkdir -p dashboard
-
-            # Copy versioned DB inside dashboard
-            cp data.db dashboard/data_$TS.db
-
-            # Refresh dashboard/data.db
-            cp data.db dashboard/data.db
-
-            # Stage root + dashboard copies
-            git add data.db dashboard/data_$TS.db dashboard/data.db
-
+            git add data.db
             if [[ -n "$(git diff --cached --name-only)" ]]; then
-              git commit -m "Update data.db $TS"
+              git commit -m "Update data.db [$(date -u +'%Y-%m-%d %H:%M:%S UTC')]"
               git push origin main
             else
               echo "No changes to commit"

@@ -26,10 +26,6 @@ jobs:
       - name: Install deps
         run: pip install -r requirements.txt
 
-      - name: Remove old DB
-        run: |
-          rm -f data.db    # always start fresh so changes are guaranteed
-
       - name: Run Draft ETL
         run: python etl/draft.py
 

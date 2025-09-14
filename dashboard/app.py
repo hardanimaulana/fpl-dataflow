@@ -12,13 +12,12 @@ st.sidebar.write(f"App version: {APP_VERSION}")
 DB_PATH = "data.db"
 
 
-@st.cache_resource
-def get_connection(path, last_modified):
+@st.cache_resource(hash_funcs={"builtins.function": id})
+def get_connection(path, version: str):
     return duckdb.connect(path, read_only=True)
 
 
-last_modified = os.path.getmtime(DB_PATH)
-con = get_connection(DB_PATH, last_modified)
+con = get_connection(DB_PATH, APP_VERSION)
 
 
 # --- Helper function to clean DataFrame ---

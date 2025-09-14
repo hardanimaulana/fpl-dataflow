@@ -9,7 +9,7 @@ st.set_page_config(page_title="Gandaria Draft League", layout="wide")
 
 st.sidebar.write(f"App version: {APP_VERSION}")
 
-DB_PATH = "data.db"
+DB_PATH = "dashboard/data.db"
 
 
 @st.cache_resource(hash_funcs={"builtins.function": id})

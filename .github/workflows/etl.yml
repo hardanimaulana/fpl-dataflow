@@ -62,3 +62,19 @@ jobs:
           else
             echo "data.db not found"
           fi
+
+      - name: Commit updated DB + force redeploy
+        run: |
+          TS=$(date -u +'%Y%m%d_%H%M%S')
+          mkdir -p dashboard
+
+          # Copy DB into dashboard
+          cp data.db dashboard/data.db
+          cp data.db dashboard/data_$TS.db
+
+          # Always bump version file (guarantees code change)
+          echo "APP_VERSION = '$TS'" > dashboard/app_version.py
+
+          git add data.db dashboard/data.db dashboard/data_$TS.db dashboard/app_version.py
+          git commit -m "Daily ETL update $TS" || echo "No changes"
+          git push origin main

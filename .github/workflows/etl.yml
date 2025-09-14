@@ -46,26 +46,26 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Commit updated DB
+      - name: Commit updated DB + bump app version
         run: |
-          git status
-          git diff --stat
-                    
+          git fetch origin main
+          git reset --hard origin/main
+
+          # Add updated database (if exists)
           if [ -f data.db ]; then
             git add data.db
-            if [[ -n "$(git diff --cached --name-only)" ]]; then
-              git commit -m "Update data.db [$(date -u +'%Y-%m-%d %H:%M:%S UTC')]"
-              git push origin main
-            else
-              echo "No changes to commit"
-            fi
-          else
-            echo "data.db not found"
           fi
 
-      - name: Force redeploy trigger
-        run: |
-          date -u > dashboard/.streamlit_app_update
-          git add dashboard/.streamlit_app_update
-          git commit -m "Trigger Streamlit redeploy [$(date -u +"%Y-%m-%d %H:%M:%S UTC")]" || echo "No changes"
-          git push origin main
+          # Always bump app version to trigger redeploy
+          mkdir -p dashboard
+          echo "# Auto-updated to trigger Streamlit redeploy" > dashboard/app_version.py
+          echo "APP_VERSION = \"$(date -u +"%Y-%m-%d %H:%M:%S UTC")\"" >> dashboard/app_version.py
+          git add dashboard/app_version.py
+
+          # Commit if any changes
+          if [[ -n "$(git diff --cached --name-only)" ]]; then
+            git commit -m "ETL update [$(date -u +"%Y-%m-%d %H:%M:%S UTC")]"
+            git push origin main
+          else
+            echo "No changes to commit"
+          fi

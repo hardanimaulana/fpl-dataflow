@@ -46,26 +46,30 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Commit updated DB + bump app version
+      - name: Commit updated DB (versioned + root)
         run: |
           git fetch origin main
           git reset --hard origin/main
 
-          # Add updated database (if exists)
           if [ -f data.db ]; then
-            git add data.db
-          fi
+            TS=$(date -u +'%Y%m%d_%H%M%S')
+            mkdir -p dashboard
 
-          # Always bump app version to trigger redeploy
-          mkdir -p dashboard
-          echo "# Auto-updated to trigger Streamlit redeploy" > dashboard/app_version.py
-          echo "APP_VERSION = \"$(date -u +"%Y-%m-%d %H:%M:%S UTC")\"" >> dashboard/app_version.py
-          git add dashboard/app_version.py
+            # Copy versioned DB inside dashboard
+            cp data.db dashboard/data_$TS.db
 
-          # Commit if any changes
-          if [[ -n "$(git diff --cached --name-only)" ]]; then
-            git commit -m "ETL update [$(date -u +"%Y-%m-%d %H:%M:%S UTC")]"
-            git push origin main
+            # Refresh dashboard/data.db
+            cp data.db dashboard/data.db
+
+            # Stage root + dashboard copies
+            git add data.db dashboard/data_$TS.db dashboard/data.db
+
+            if [[ -n "$(git diff --cached --name-only)" ]]; then
+              git commit -m "Update data.db $TS"
+              git push origin main
+            else
+              echo "No changes to commit"
+            fi
           else
-            echo "No changes to commit"
+            echo "data.db not found"
           fi

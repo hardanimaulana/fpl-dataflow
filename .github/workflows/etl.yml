@@ -48,16 +48,16 @@ jobs:
 
       - name: Commit updated DB
         run: |
-          git fetch origin main
-          git reset --hard origin/main
+          git status
+          git diff --stat
 
           if [ -f data.db ]; then
             git add data.db
             if [[ -n "$(git diff --cached --name-only)" ]]; then
-              git commit -m "Update data.db [$(date -u +'%Y-%m-%d %H:%M:%S UTC')]"
+              git commit -m "Update data.db [$(date -u +"%Y-%m-%d %H:%M:%S UTC")]"
               git push origin main
             else
-              echo "No changes to commit"
+              echo "No changes to data.db"
             fi
           else
             echo "data.db not found"

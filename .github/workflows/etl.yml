@@ -45,8 +45,9 @@ jobs:
 
       - name: Commit updated DB
         run: |
-          # Stage the file (force in case it's ignored by .gitignore)
-          git add -f data.db
+          git status
+          git diff --stat
+          git add -f data.db # Stage the file (force in case it's ignored by .gitignore)
                     
           # Check if there are *any* staged changes
           if [[ -n "$(git diff --cached --name-only)" ]]; then

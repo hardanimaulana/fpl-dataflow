@@ -69,3 +69,11 @@ jobs:
           git add .streamlit_app_update
           git commit -m "Trigger Streamlit redeploy [$(date -u +"%Y-%m-%d %H:%M:%S UTC")]" || echo "No changes"
           git push origin main
+
+      - name: Force visible code change
+        run: |
+          echo "# Auto-updated to trigger Streamlit redeploy" > app_version.py
+          echo "APP_VERSION = \"$(date -u +"%Y-%m-%d %H:%M:%S UTC")\"" >> app_version.py
+          git add app_version.py
+          git commit -m "Bump app version to trigger redeploy [$(date -u +"%Y-%m-%d %H:%M:%S UTC")]" || echo "No changes"
+          git push origin main

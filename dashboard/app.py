@@ -3,8 +3,11 @@ import duckdb
 import pandas as pd
 from io import BytesIO
 import os
+from app_version import APP_VERSION
 
 st.set_page_config(page_title="Gandaria Draft League", layout="wide")
+
+st.sidebar.write(f"App version: {APP_VERSION}")
 
 DB_PATH = "data.db"
 

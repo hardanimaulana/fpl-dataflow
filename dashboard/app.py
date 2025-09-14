@@ -2,11 +2,20 @@ import streamlit as st
 import duckdb
 import pandas as pd
 from io import BytesIO
+import os
 
 st.set_page_config(page_title="Gandaria Draft League", layout="wide")
 
 DB_PATH = "data.db"
-con = duckdb.connect(DB_PATH, read_only=True)
+
+
+@st.cache_resource
+def get_connection(path, last_modified):
+    return duckdb.connect(path, read_only=True)
+
+
+last_modified = os.path.getmtime(DB_PATH)
+con = get_connection(DB_PATH, last_modified)
 
 
 # --- Helper function to clean DataFrame ---

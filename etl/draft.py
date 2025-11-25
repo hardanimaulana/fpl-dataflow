@@ -75,9 +75,9 @@ def get_progress(row: pd.Series) -> str:
     """
     if pd.isna(row["last_rank"]):
         return ""
-    elif row["rank_sort"] < row["last_rank"]:
+    elif row["rank"] < row["last_rank"]:
         return "green"
-    elif row["rank_sort"] > row["last_rank"]:
+    elif row["rank"] > row["last_rank"]:
         return "red"
     else:
         return ""

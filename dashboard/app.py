@@ -44,7 +44,7 @@ st.markdown("---")
 # Get the latest gameweek number dynamically
 latest_gw = con.execute(
     """
-    SELECT MAX(gameweek) FROM draft_standings_gw
+    SELECT 'GW' || MAX(CAST(SUBSTRING(gameweek, 3) AS INT)) FROM draft_standings_gw
 """
 ).fetchone()[0]
 

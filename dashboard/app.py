@@ -106,7 +106,6 @@ df_last = con.execute(
     ORDER BY rank_sort
 """
 ).df()
-df_last.index += 1
 
 # Drop unnecessary columns and clean index
 columns_to_drop = ["update", "gameweek", "league_entry"]
@@ -134,6 +133,8 @@ progress_map = {
 }
 if "progress" in df_last.columns:
     df_last["progress"] = df_last["progress"].map(progress_map)
+
+df_last.index += 1
 
 # Show table
 st.dataframe(

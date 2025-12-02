@@ -27,7 +27,54 @@ def clean_df(df):
     return df
 
 
-# ========== 1. Last updated ==========
+# ========== 1. Summary per league_entry ==========
+st.subheader("📈 Summary per Team")
+
+df_summary = con.execute(
+    """
+    SELECT 
+        entry_name,
+        player_name,
+        SUM(CASE WHEN progress = 'green' THEN 1 ELSE 0 END) AS total_green,
+        SUM(CASE WHEN progress = 'red' THEN 1 ELSE 0 END) AS total_red,
+        SUM(CASE WHEN best_gw = 'best' THEN 1 ELSE 0 END) AS best_points_count
+    FROM draft_standings_gw
+    GROUP BY entry_name, player_name
+    ORDER BY total_green DESC, total_red ASC, best_point_count DESC
+"""
+).df()
+
+# Calculate progress points (2*green - 1*red) and best points (just count)
+df_summary["progress_points"] = (
+    2 * df_summary["total_green"] - 1 * df_summary["total_red"]
+)
+df_summary["best_points"] = df_summary["best_points_count"]
+
+df_summary = df_summary[
+    [
+        "entry_name",
+        "player_name",
+        "total_green",
+        "total_red",
+        "progress_points",
+        "best_points",
+    ]
+]
+
+# Rename columns for readability
+rename_map = {
+    "entry_name": "Team",
+    "player_name": "Manager",
+    "total_green": "🟢⬆️",
+    "total_red": "🔴⬇️",
+    "progress_points": "Progress Points",
+    "best_points_count": "Best Points",
+}
+df_summary = df_summary.rename(columns=rename_map)
+
+st.dataframe(df_summary, use_container_width=True)
+
+# ========== 2. Last updated ==========
 # Get the latest update timestamp across all standings
 last_update = con.execute(
     "SELECT MAX(update) as last_update FROM draft_standings"
@@ -40,7 +87,7 @@ else:
 st.markdown("✅ Click on the column headers to sort the table interactively.")
 st.markdown("---")
 
-# ========== 2. Last Standings ==========
+# ========== 3. Last Standings ==========
 # Get the latest gameweek number dynamically
 latest_gw = con.execute(
     """
@@ -89,7 +136,7 @@ if "progress" in df_last.columns:
 # Show table
 st.dataframe(df_last, use_container_width=True)
 
-# ========== 3. Complete Gameweek ==========
+# ========== 4. Complete Gameweek ==========
 st.subheader("📊 Complete Standings per Gameweek")
 df_all = con.execute("SELECT * FROM draft_standings_gw ORDER BY update, rank_sort").df()
 
@@ -116,50 +163,3 @@ st.dataframe(
     use_container_width=True,
     height=600,
 )
-
-# ========== 4. Summary per league_entry ==========
-st.subheader("📈 Summary per Team")
-
-df_summary = con.execute(
-    """
-    SELECT 
-        entry_name,
-        player_name,
-        SUM(CASE WHEN progress = 'green' THEN 1 ELSE 0 END) AS total_green,
-        SUM(CASE WHEN progress = 'red' THEN 1 ELSE 0 END) AS total_red,
-        SUM(CASE WHEN best_gw = 'best' THEN 1 ELSE 0 END) AS best_points_count
-    FROM draft_standings_gw
-    GROUP BY entry_name, player_name
-    ORDER BY total_green DESC, total_red ASC, best_point_count DESC
-"""
-).df()
-
-# Calculate progress points (2*green - 1*red) and best points (just count)
-df_summary["progress_points"] = (
-    2 * df_summary["total_green"] - 1 * df_summary["total_red"]
-)
-df_summary["best_points"] = df_summary["best_points_count"]
-
-df_summary = df_summary[
-    [
-        "entry_name",
-        "player_name",
-        "total_green",
-        "total_red",
-        "progress_points",
-        "best_points",
-    ]
-]
-
-# Rename columns for readability
-rename_map = {
-    "entry_name": "Team",
-    "player_name": "Manager",
-    "total_green": "🟢⬆️",
-    "total_red": "🔴⬇️",
-    "progress_points": "Progress Points",
-    "best_points_count": "Best Points",
-}
-df_summary = df_summary.rename(columns=rename_map)
-
-st.dataframe(df_summary, use_container_width=True)

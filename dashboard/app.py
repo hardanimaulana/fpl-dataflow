@@ -130,6 +130,7 @@ df_summary = con.execute(
         SUM(CASE WHEN best_gw = 'best' THEN 1 ELSE 0 END) AS best_points_count
     FROM draft_standings_gw
     GROUP BY entry_name, player_name
+    ORDER BY total_green DESC, total_red ASC, best_point_count DESC
 """
 ).df()
 

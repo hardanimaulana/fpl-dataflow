@@ -50,17 +50,17 @@ df_summary = con.execute(
         player_name,
         SUM(CASE WHEN progress = 'green' THEN 1 ELSE 0 END) AS total_green,
         SUM(CASE WHEN progress = 'red' THEN 1 ELSE 0 END) AS total_red,
+        SUM(CASE WHEN best_gw = 'best' THEN 1 ELSE 0 END) AS best_points_count,
+        (2 * SUM(CASE WHEN progress = 'green' THEN 1 ELSE 0 END)
+        - 1 * SUM(CASE WHEN progress = 'red' THEN 1 ELSE 0 END)
+        ) AS progress_points
         SUM(CASE WHEN best_gw = 'best' THEN 1 ELSE 0 END) AS best_points_count
     FROM draft_standings_gw
     GROUP BY entry_name, player_name
-    ORDER BY total_green DESC, total_red ASC, best_points_count DESC
+    ORDER BY progress_points DESC, total_green DESC, total_red ASC, best_points_count DESC
 """
 ).df()
 
-# Calculate progress points (2*green - 1*red) and best points (just count)
-df_summary["progress_points"] = (
-    2 * df_summary["total_green"] - 1 * df_summary["total_red"]
-)
 df_summary["best_points"] = df_summary["best_points_count"]
 
 df_summary = df_summary[
@@ -74,7 +74,6 @@ df_summary = df_summary[
     ]
 ]
 
-df_summary.sort_values(by="progress_points", ascending=False)
 df_summary.index += 1
 
 # Rename columns for readability

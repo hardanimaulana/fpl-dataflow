@@ -50,11 +50,10 @@ df_summary = con.execute(
         player_name,
         SUM(CASE WHEN progress = 'green' THEN 1 ELSE 0 END) AS total_green,
         SUM(CASE WHEN progress = 'red' THEN 1 ELSE 0 END) AS total_red,
-        SUM(CASE WHEN best_gw = 'best' THEN 1 ELSE 0 END) AS best_points_count,
         (2 * SUM(CASE WHEN progress = 'green' THEN 1 ELSE 0 END)
         - 1 * SUM(CASE WHEN progress = 'red' THEN 1 ELSE 0 END)
-        ) AS progress_points
-        SUM(CASE WHEN best_gw = 'best' THEN 1 ELSE 0 END) AS best_points_count
+        ) AS progress_points,
+        SUM(CASE WHEN best_gw = 'best' THEN 1 ELSE 0 END) AS best_points_count,
     FROM draft_standings_gw
     GROUP BY entry_name, player_name
     ORDER BY progress_points DESC, total_green DESC, total_red ASC, best_points_count DESC

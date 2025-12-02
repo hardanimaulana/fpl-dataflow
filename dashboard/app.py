@@ -85,9 +85,7 @@ rename_map = {
 }
 df_summary = df_summary.rename(columns=rename_map)
 
-st.dataframe(
-    df_summary.style.highlight_max(axis=0), use_container_width=True, height=500
-)
+st.dataframe(df_summary, use_container_width=True, height=480)
 
 # ========== 3. Last Standings ==========
 # Get the latest gameweek number dynamically
@@ -139,7 +137,7 @@ if "progress" in df_last.columns:
 st.dataframe(
     df_last,
     use_container_width=True,
-    height=500,
+    height=480,
 )
 
 # ========== 4. Complete Gameweek ==========

@@ -56,6 +56,7 @@ df_summary = con.execute(
     ORDER BY total_green DESC, total_red ASC, best_points_count DESC
 """
 ).df()
+df_summary.index += 1
 
 # Calculate progress points (2*green - 1*red) and best points (just count)
 df_summary["progress_points"] = (
@@ -85,7 +86,7 @@ rename_map = {
 }
 df_summary = df_summary.rename(columns=rename_map)
 
-st.dataframe(df_summary, use_container_width=True, height=450)
+st.dataframe(df_summary, use_container_width=True, height=420)
 
 # ========== 3. Last Standings ==========
 # Get the latest gameweek number dynamically
@@ -105,6 +106,7 @@ df_last = con.execute(
     ORDER BY rank_sort
 """
 ).df()
+df_last.index += 1
 
 # Drop unnecessary columns and clean index
 columns_to_drop = ["update", "gameweek", "league_entry"]
@@ -137,7 +139,7 @@ if "progress" in df_last.columns:
 st.dataframe(
     df_last,
     use_container_width=True,
-    height=450,
+    height=420,
 )
 
 # ========== 4. Complete Gameweek ==========
@@ -148,6 +150,7 @@ df_all = con.execute("SELECT * FROM draft_standings_gw ORDER BY update, rank_sor
 columns_to_drop = ["league_entry"]
 df_all = df_all.drop(columns=[c for c in columns_to_drop if c in df_all.columns])
 df_all = clean_df(df_all)
+df_all.index += 1
 df_all.sort_values(["update", "rank"], ascending=[False, True])
 # Rename columns for readability
 rename_map = {

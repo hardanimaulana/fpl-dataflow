@@ -86,9 +86,7 @@ rename_map = {
 df_summary = df_summary.rename(columns=rename_map)
 
 st.dataframe(
-    df_summary,
-    use_container_width=True,
-    height=11,  # number of players
+    df_summary.style.highlight_max(axis=0), use_container_width=True, height=500
 )
 
 # ========== 3. Last Standings ==========
@@ -141,7 +139,7 @@ if "progress" in df_last.columns:
 st.dataframe(
     df_last,
     use_container_width=True,
-    height=11,  # number of players
+    height=500,
 )
 
 # ========== 4. Complete Gameweek ==========

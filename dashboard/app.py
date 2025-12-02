@@ -56,7 +56,6 @@ df_summary = con.execute(
     ORDER BY total_green DESC, total_red ASC, best_points_count DESC
 """
 ).df()
-df_summary.index += 1
 
 # Calculate progress points (2*green - 1*red) and best points (just count)
 df_summary["progress_points"] = (
@@ -85,6 +84,8 @@ rename_map = {
     "best_points_count": "Best Points",
 }
 df_summary = df_summary.rename(columns=rename_map)
+df_summary.sort_values(by="progress_points", ascending=False)
+df_summary.index += 1
 
 st.dataframe(df_summary, use_container_width=True, height=420)
 

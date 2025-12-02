@@ -74,6 +74,9 @@ df_summary = df_summary[
     ]
 ]
 
+df_summary.sort_values(by="progress_points", ascending=False)
+df_summary.index += 1
+
 # Rename columns for readability
 rename_map = {
     "entry_name": "Team",
@@ -84,8 +87,6 @@ rename_map = {
     "best_points_count": "Best Points",
 }
 df_summary = df_summary.rename(columns=rename_map)
-df_summary.sort_values(by="progress_points", ascending=False)
-df_summary.index += 1
 
 st.dataframe(df_summary, use_container_width=True, height=420)
 

@@ -27,7 +27,20 @@ def clean_df(df):
     return df
 
 
-# ========== 1. Summary per league_entry ==========
+# ========== 1. Last updated ==========
+# Get the latest update timestamp across all standings
+last_update = con.execute(
+    "SELECT MAX(update) as last_update FROM draft_standings"
+).fetchone()[0]
+if last_update:
+    st.markdown(f"**📅 Last data update:** {last_update}")
+else:
+    st.warning("No update timestamp found in the database.")
+
+st.markdown("✅ Click on the column headers to sort the table interactively.")
+st.markdown("---")
+
+# ========== 2. Summary per league_entry ==========
 st.subheader("📈 Summary per Team")
 
 df_summary = con.execute(
@@ -73,19 +86,6 @@ rename_map = {
 df_summary = df_summary.rename(columns=rename_map)
 
 st.dataframe(df_summary, use_container_width=True)
-
-# ========== 2. Last updated ==========
-# Get the latest update timestamp across all standings
-last_update = con.execute(
-    "SELECT MAX(update) as last_update FROM draft_standings"
-).fetchone()[0]
-if last_update:
-    st.markdown(f"**📅 Last data update:** {last_update}")
-else:
-    st.warning("No update timestamp found in the database.")
-
-st.markdown("✅ Click on the column headers to sort the table interactively.")
-st.markdown("---")
 
 # ========== 3. Last Standings ==========
 # Get the latest gameweek number dynamically

@@ -46,35 +46,28 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Commit updated DB
-        run: |
-          git status
-          git diff --stat
-
-          if [ -f data.db ]; then
-            git add data.db
-            if [[ -n "$(git diff --cached --name-only)" ]]; then
-              git commit -m "Update data.db [$(date -u +"%Y-%m-%d %H:%M:%S UTC")]"
-              git push origin main
-            else
-              echo "No changes to data.db"
-            fi
-          else
-            echo "data.db not found"
-          fi
-
-      - name: Commit updated DB + force redeploy
+      - name: Commit and Push Updated DB
         run: |
           TS=$(date -u +'%Y%m%d_%H%M%S')
           mkdir -p dashboard
 
-          # Copy DB into dashboard
+          # Prepare files for deployment
           cp data.db dashboard/data.db
           cp data.db dashboard/data_$TS.db
-
-          # Always bump version file (guarantees code change)
           echo "APP_VERSION = '$TS'" > dashboard/app_version.py
 
+          # Stage all changes
           git add data.db dashboard/data.db dashboard/data_$TS.db dashboard/app_version.py
-          git commit -m "Daily ETL update $TS" || echo "No changes"
-          git push origin main
+
+          # Check if there are changes to commit
+          if [[ -n "$(git diff --cached --name-only)" ]]; then
+            git commit -m "Daily ETL update $TS"
+            
+            # Use rebase to pull any remote changes (like manual edits) before pushing
+            # This prevents the "non-fast-forward" error
+            git pull origin main --rebase
+            
+            git push origin main
+          else
+            echo "No changes detected to the database or version file."
+          fi

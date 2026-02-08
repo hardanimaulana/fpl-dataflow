@@ -1,13 +1,5 @@
-# UI
-streamlit>=1.30,<2
-
-# Data
 duckdb>=0.9,<2
 pandas>=2.2,<3.1
 python-dateutil>=2.9,<3
-
-# Networking
 requests>=2.31,<3
-
-# Database
 sqlalchemy>=2.0,<3

@@ -54,23 +54,19 @@ jobs:
           TS=$(date -u +'%Y%m%d_%H%M%S')
           mkdir -p dashboard
 
+          # Always sync first
+          git pull origin main --ff-only
+
           # Prepare files for deployment
           cp data.db dashboard/data.db
           cp data.db dashboard/data_$TS.db
           echo "APP_VERSION = '$TS'" > dashboard/app_version.py
 
-          # Stage all changes
           git add data.db dashboard/data.db dashboard/data_$TS.db dashboard/app_version.py
 
-          # Check if there are changes to commit
           if [[ -n "$(git diff --cached --name-only)" ]]; then
             git commit -m "Daily ETL update $TS"
-            
-            # Use rebase to pull any remote changes (like manual edits) before pushing
-            # This prevents the "non-fast-forward" error
-            git pull origin main --rebase
-            
             git push origin main
           else
-            echo "No changes detected to the database or version file."
+            echo "No changes detected."
           fi

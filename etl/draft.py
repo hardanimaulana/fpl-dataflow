@@ -369,12 +369,18 @@ def assign_gameweeks(df_updates: pd.DataFrame) -> pd.DataFrame:
     data = requests.get(url).json()
 
     events_df = pd.DataFrame(data["events"])
-    events_df["deadline_time"] = pd.to_datetime(events_df["deadline_time"], utc=True)
+
+    # Always normalize to ns + UTC explicitly
+    events_df["deadline_time"] = pd.to_datetime(
+        events_df["deadline_time"], utc=True
+    ).astype("datetime64[ns]")
+
     events_df["next_deadline_time"] = events_df["deadline_time"].shift(-1)
-    events_df["end_time"] = events_df["next_deadline_time"] - pd.Timedelta(seconds=1)
-    events_df.loc[events_df["end_time"].isna(), "end_time"] = (
-        pd.Timestamp.max.tz_localize("UTC")
-    )
+
+    events_df["end_time"] = (
+        events_df["next_deadline_time"] - pd.Timedelta(seconds=1)
+    ).astype("datetime64[ns]")
+
     events_df["gameweek"] = "GW" + events_df["id"].astype(str)
 
     # --- Map update timestamp → gameweek ---

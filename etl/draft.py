@@ -370,23 +370,19 @@ def assign_gameweeks(df_updates: pd.DataFrame) -> pd.DataFrame:
 
     events_df = pd.DataFrame(data["events"])
 
-    # Always normalize to ns + UTC explicitly
-    events_df["deadline_time"] = pd.to_datetime(
-        events_df["deadline_time"], utc=True
-    ).astype("datetime64[ns]")
+    events_df["deadline_time"] = pd.to_datetime(events_df["deadline_time"], utc=True)
 
     events_df["next_deadline_time"] = events_df["deadline_time"].shift(-1)
 
-    events_df["end_time"] = (
-        events_df["next_deadline_time"] - pd.Timedelta(seconds=1)
-    ).astype("datetime64[ns]")
+    events_df["end_time"] = events_df["next_deadline_time"] - pd.Timedelta(seconds=1)
 
     events_df["gameweek"] = "GW" + events_df["id"].astype(str)
 
     # --- Map update timestamp → gameweek ---
     def get_gw(ts):
         row = events_df[
-            (events_df["deadline_time"] <= ts) & (events_df["end_time"] >= ts)
+            (events_df["deadline_time"] <= ts)
+            & (events_df["end_time"].isna() | (events_df["end_time"] >= ts))
         ]
         return row.iloc[0]["gameweek"] if not row.empty else None
 

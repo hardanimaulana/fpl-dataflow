@@ -46,8 +46,8 @@ st.subheader("📈 Summary per Team")
 df_summary = con.execute(
     """
     SELECT 
-        entry_name,
-        player_name,
+        ANY_VALUE(entry_name) as entry_name,
+        ANY_VALUE(player_name) as player_name,
         SUM(CASE WHEN progress = 'green' THEN 1 ELSE 0 END) AS total_green,
         SUM(CASE WHEN progress = 'red' THEN 1 ELSE 0 END) AS total_red,
         (2 * SUM(CASE WHEN progress = 'green' THEN 1 ELSE 0 END)
@@ -55,7 +55,7 @@ df_summary = con.execute(
         ) AS progress_points,
         SUM(CASE WHEN best_gw = 'best' THEN 1 ELSE 0 END) AS best_points_count,
     FROM draft_standings_gw
-    GROUP BY entry_name, player_name
+    GROUP BY league_entry
     ORDER BY progress_points DESC, total_green DESC, total_red ASC, best_points_count DESC
 """
 ).df()
